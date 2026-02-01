@@ -1,89 +1,55 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tiranga Official - Live OTP Server</title>
+    <title>Tiranga Official</title>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth-compat.js"></script>
-
     <style>
-        :root { --bg: #050a14; --card: #1b2644; --gold: #ffc107; --green: #00c853; }
-        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; text-align: center; }
-        .box { background: var(--card); margin: 50px auto; width: 85%; padding: 25px; border-radius: 20px; border: 1px solid #2a3a6a; }
-        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #333; background: #000; color: #fff; }
-        .btn { width: 100%; padding: 15px; background: var(--gold); border: none; border-radius: 30px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        #recaptcha-container { margin: 10px auto; }
+        :root { --bg: #050a14; --card: #1b2644; --gold: #ffc107; }
+        body { background: var(--bg); color: white; font-family: sans-serif; text-align: center; margin: 0; }
+        .box { background: var(--card); margin: 50px auto; width: 85%; padding: 25px; border-radius: 20px; border: 1px solid #333; }
+        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; background: #000; color: white; }
+        .btn { width: 100%; padding: 15px; background: var(--gold); border: none; border-radius: 30px; font-weight: bold; cursor: pointer; color: #000; }
     </style>
 </head>
 <body>
-
-    <div id="auth-screen">
-        <div class="box">
-            <h2 style="color:var(--gold)">TIRANGA LOGIN</h2>
-            <p>Enter number to receive OTP</p>
-            <input type="number" id="phone" placeholder="Mobile Number">
-            <div id="recaptcha-container"></div>
-            <button id="send-otp-btn" class="btn" onclick="sendOTP()">Send OTP</button>
-            <div id="otp-area" style="display:none; margin-top:20px;">
-                <input type="number" id="otp" placeholder="Enter 6-Digit OTP">
-                <button class="btn" style="background:var(--green); color:white;" onclick="verifyOTP()">Login Now</button>
-            </div>
+    <div class="box">
+        <h2 style="color:var(--gold)">TIRANGA LOGIN</h2>
+        <input type="number" id="phone" placeholder="Mobile Number">
+        <div id="recaptcha-container"></div>
+        <button id="send-otp-btn" class="btn" onclick="sendOTP()">Send OTP</button>
+        <div id="otp-area" style="display:none; margin-top:20px;">
+            <input type="number" id="otp" placeholder="Enter 6-Digit OTP">
+            <button class="btn" style="background:#00c853; color:white;" onclick="verifyOTP()">Login Now</button>
         </div>
     </div>
-
-    <div id="game-screen" style="display:none;">
-        <h1 style="color:var(--gold); margin-top:50px;">Welcome to Tiranga!</h1>
-        <p>Login Successful. Your balance: ₹500.00</p>
-        <button class="btn" onclick="location.reload()" style="width:50%">Logout</button>
-    </div>
-
     <script>
-        // AAPKA ASLI CONFIG CODE
-          const firebaseConfig = {
-    apiKey: "AIzaSyC4RJP3g3LVFPnTzfSPmpRMkNMp0bW9gUY",
-    authDomain: "my-pro-gam-2ea8a.firebaseapp.com",
-    projectId: "my-pro-gam-2ea8a",
-    storageBucket: "my-pro-gam-2ea8a.firebasestorage.app",
-    messagingSenderId: "498393645972",
-    appId: "1:498393645972:web:3b1a6de2b9af3016b7c581"
-  };
-              
+        const firebaseConfig = {
+            apiKey: "AIzaSyC4RJP3g3LVFPnTzfSPmpRMkNMp0bW9gUY",
+            authDomain: "my-pro-gam-2ea8a.firebaseapp.com",
+            projectId: "my-pro-gam-2ea8a",
+            storageBucket: "my-pro-gam-2ea8a.firebasestorage.app",
+            messagingSenderId: "498393645972",
+            appId: "1:498393645972:web:3b1a6de2b9af3016b7c581"
         };
         firebase.initializeApp(firebaseConfig);
-
         function sendOTP() {
-    const phoneInput = document.getElementById('phone').value;
-    const phone = "+91" + phoneInput;
-
-    // Invisible ReCAPTCHA सेट करना
-    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('send-otp-btn', {
-        'size': 'invisible',
-        'callback': (response) => {
-            // ReCAPTCHA हल होने पर OTP भेजें
+            const phone = "+91" + document.getElementById('phone').value;
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {'size': 'invisible'});
+            firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier)
+                .then((confirmationResult) => {
+                    window.confirmationResult = confirmationResult;
+                    document.getElementById('otp-area').style.display = 'block';
+                    alert("OTP भेज दिया गया है!");
+                }).catch((err) => { alert("Error: " + err.message); });
         }
-    });
-
-    const appVerifier = window.recaptchaVerifier;
-
-    firebase.auth().signInWithPhoneNumber(phone, appVerifier)
-        .then((confirmationResult) => {
-            window.confirmationResult = confirmationResult;
-            document.getElementById('otp-area').style.display = 'block';
-            alert("OTP आपके नंबर " + phoneInput + " पर भेज दिया गया है!");
-        }).catch((err) => {
-            alert("Error: " + err.message);
-        });
-        }
-              
-        }
-
         function verifyOTP() {
             const code = document.getElementById('otp').value;
-            confirmationResult.confirm(code).then(() => {
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('game-screen').style.display = 'block';
-            }).catch(() => alert("Invalid OTP!"));
+            window.confirmationResult.confirm(code).then(() => { alert("Login Successful!"); })
+                .catch(() => alert("Invalid OTP!"));
         }
     </script>
 </body>
