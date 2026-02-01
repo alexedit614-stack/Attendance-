@@ -24,8 +24,7 @@
             <p>Enter number to receive OTP</p>
             <input type="number" id="phone" placeholder="Mobile Number">
             <div id="recaptcha-container"></div>
-            <button class="btn" onclick="sendOTP()">Send OTP</button>
-
+            <button id="send-otp-btn" class="btn" onclick="sendOTP()">Send OTP</button>
             <div id="otp-area" style="display:none; margin-top:20px;">
                 <input type="number" id="otp" placeholder="Enter 6-Digit OTP">
                 <button class="btn" style="background:var(--green); color:white;" onclick="verifyOTP()">Login Now</button>
@@ -54,15 +53,29 @@
         firebase.initializeApp(firebaseConfig);
 
         function sendOTP() {
-            const phone = "+91" + document.getElementById('phone').value;
-            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container');
-            
-            firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier)
-                .then(confirmationResult => {
-                    window.confirmationResult = confirmationResult;
-                    document.getElementById('otp-area').style.display = 'block';
-                    alert("OTP has been sent to " + phone);
-                }).catch(err => alert("Error: " + err.message));
+    const phoneInput = document.getElementById('phone').value;
+    const phone = "+91" + phoneInput;
+
+    // Invisible ReCAPTCHA सेट करना
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('send-otp-btn', {
+        'size': 'invisible',
+        'callback': (response) => {
+            // ReCAPTCHA हल होने पर OTP भेजें
+        }
+    });
+
+    const appVerifier = window.recaptchaVerifier;
+
+    firebase.auth().signInWithPhoneNumber(phone, appVerifier)
+        .then((confirmationResult) => {
+            window.confirmationResult = confirmationResult;
+            document.getElementById('otp-area').style.display = 'block';
+            alert("OTP आपके नंबर " + phoneInput + " पर भेज दिया गया है!");
+        }).catch((err) => {
+            alert("Error: " + err.message);
+        });
+        }
+              
         }
 
         function verifyOTP() {
