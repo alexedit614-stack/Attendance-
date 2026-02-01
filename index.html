@@ -36,16 +36,35 @@
             appId: "1:498393645972:web:3b1a6de2b9af3016b7c581"
         };
         firebase.initializeApp(firebaseConfig);
-        function sendOTP() {
-            const phone = "+91" + document.getElementById('phone').value;
-            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {'size': 'invisible'});
-            firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier)
+                function sendOTP() {
+            const phoneInput = document.getElementById('phone').value;
+            const phone = "+91" + phoneInput;
+
+            // अगर पहले से verifier बना है तो उसे दोबारा नहीं बनाएगा
+            if (!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                    'size': 'invisible'
+                });
+            }
+
+            const appVerifier = window.recaptchaVerifier;
+
+            firebase.auth().signInWithPhoneNumber(phone, appVerifier)
                 .then((confirmationResult) => {
                     window.confirmationResult = confirmationResult;
                     document.getElementById('otp-area').style.display = 'block';
                     alert("OTP भेज दिया गया है!");
-                }).catch((err) => { alert("Error: " + err.message); });
-        }
+                }).catch((err) => {
+                    alert("गलती: " + err.message);
+                    // एरर आने पर रीकैप्चा रीसेट करें
+                    if (window.recaptchaVerifier) {
+                        window.recaptchaVerifier.render().then(function(widgetId) {
+                            grecaptcha.reset(widgetId);
+                        });
+                    }
+                });
+                         }
+        
         function verifyOTP() {
             const code = document.getElementById('otp').value;
             window.confirmationResult.confirm(code).then(() => { alert("Login Successful!"); })
