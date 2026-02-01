@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiranga Official - Live OTP Server</title>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth-compat.js"></script>
+
+    <style>
+        :root { --bg: #050a14; --card: #1b2644; --gold: #ffc107; --green: #00c853; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; text-align: center; }
+        .box { background: var(--card); margin: 50px auto; width: 85%; padding: 25px; border-radius: 20px; border: 1px solid #2a3a6a; }
+        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #333; background: #000; color: #fff; }
+        .btn { width: 100%; padding: 15px; background: var(--gold); border: none; border-radius: 30px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        #recaptcha-container { margin: 10px auto; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-screen">
+        <div class="box">
+            <h2 style="color:var(--gold)">TIRANGA LOGIN</h2>
+            <p>Enter number to receive OTP</p>
+            <input type="number" id="phone" placeholder="Mobile Number">
+            <div id="recaptcha-container"></div>
+            <button class="btn" onclick="sendOTP()">Send OTP</button>
+
+            <div id="otp-area" style="display:none; margin-top:20px;">
+                <input type="number" id="otp" placeholder="Enter 6-Digit OTP">
+                <button class="btn" style="background:var(--green); color:white;" onclick="verifyOTP()">Login Now</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-screen" style="display:none;">
+        <h1 style="color:var(--gold); margin-top:50px;">Welcome to Tiranga!</h1>
+        <p>Login Successful. Your balance: ₹500.00</p>
+        <button class="btn" onclick="location.reload()" style="width:50%">Logout</button>
+    </div>
+
+    <script>
+        // AAPKA ASLI CONFIG CODE
+        const firebaseConfig = {
+            apiKey: "AIzaSyAKNfkfO3NB3FBVmNRZOmHpRlRgYH9BObo",
+            authDomain: "win-jan.firebaseapp.com",
+            projectId: "win-jan",
+            storageBucket: "win-jan.firebasestorage.app",
+            messagingSenderId: "395755624743",
+            appId: "1:395755624743:web:72f435711a7681b9a4f102"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        function sendOTP() {
+            const phone = "+91" + document.getElementById('phone').value;
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container');
+            
+            firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier)
+                .then(confirmationResult => {
+                    window.confirmationResult = confirmationResult;
+                    document.getElementById('otp-area').style.display = 'block';
+                    alert("OTP has been sent to " + phone);
+                }).catch(err => alert("Error: " + err.message));
+        }
+
+        function verifyOTP() {
+            const code = document.getElementById('otp').value;
+            confirmationResult.confirm(code).then(() => {
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('game-screen').style.display = 'block';
+            }).catch(() => alert("Invalid OTP!"));
+        }
+    </script>
+</body>
+</html>
